@@ -80,6 +80,7 @@ Rule for adding anything new to this roadmap (tool, library, pattern): it must a
 
 | Tool | Trigger to add it |
 |---|---|
+| **Input-boundary PII redaction** | **Required gate — not optional.** Must be built before real NYC 311 descriptions (Phase 6) or any real tenant data (real-property deployment) flow into the system. Current PII test only checks the output doesn't echo PII back; it does nothing to stop raw PII in the input from reaching the LLM, database, or tracing tool. See DECISIONS.md. |
 | Mem0 | Only for cross-session user preferences — not needed for single-session classification |
 | RAGAS / DeepEval | When retrieval (Phase 6) exists and needs measuring |
 | Promptfoo | Phase 9, red-team/regression testing |
