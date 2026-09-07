@@ -5,3 +5,6 @@ __pycache__/
 *.egg-info/
 .venv/
 venv/
+
+# Regenerated each eval run; the committed record is evals/SUMMARY.md
+evals/latest_run.json

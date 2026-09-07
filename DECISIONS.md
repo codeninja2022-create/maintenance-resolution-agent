@@ -4,6 +4,9 @@ One line per decision. Newest at top. When a new idea/tool/suggestion shows up (
 
 ---
 
+**2026-09-07 — Day 5 done: Phase 1 complete. Next real failure = urgency calibration, so Phase 3 before Phase 2.**
+15-case eval on `claude-opus-5` (`evals/SUMMARY.md`): category 0.87, **emergency recall 1.0**, PII leaks 0, valid-output 1.0 — the safety story holds. Two concrete failures in the working system: (1) **urgency runs hot** — accuracy 0.73, every miss an over-escalation, emergency precision 0.71 with 2 model-driven false emergencies; (2) **`missing_information` is noise** — flagged on 14/15 cases including actionable ones, so it can't gate human review. Both are classification-quality problems, not missing infrastructure. Decision: **do Phase 3 (classification refinement — rubric/prompt tuning, confidence thresholds, urgency-specific tests) next, ahead of Phase 2 (intake hardening).** Retrieval/vendors/LangGraph stay deferred — nothing in the eval says the single-call classifier's structure is the problem, only its calibration. Model A/B (Sonnet/Haiku vs opus-5, currently $0.014 + 5.5s/case) folds into Phase 3.
+
 **2026-09-07 — Project locked as "Maintenance Resolution Intelligence Agent" (Resolvly, unblocked by public data)**
 Resolvly had the right problem shape (real ambiguity, real stakes) but was never started — no tenant data existed. Unblocked by using NYC 311/HPD data as a stand-in for messy real complaints, plus synthetic data for vendors/repair costs/outcomes. This is Resolvly's problem, just made buildable now instead of waiting indefinitely on real tenants.
 
