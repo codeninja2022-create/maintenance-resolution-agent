@@ -8,7 +8,7 @@ See `DESIGN_BRIEF.md` for the full plan, `ROADMAP.md` for phase-by-phase
 architecture, `DECISIONS.md` for the reasoning log, and `PROGRESS.md` +
 `DAILY_PLAN.md` for current status.
 
-## Phase 1 status: Day 1 in progress
+## Phase 1 status: Day 4 done — `POST /classify` FastAPI endpoint live
 
 ## Setup
 
@@ -19,15 +19,54 @@ pip install -e ".[dev]"
 ## Run tests
 
 ```bash
-pytest
+pytest          # 24 offline tests, no API key needed
 ```
+
+## Run the real classifier against fixture cases
+
+Needs an Anthropic API key. Copy `.env.example` to `.env` and fill in
+`ANTHROPIC_API_KEY` (or export it in your shell).
+
+```bash
+python scripts/run_classifier.py            # default sample of 5 cases
+python scripts/run_classifier.py case_01     # a specific case
+python scripts/run_classifier.py --all       # all 15
+```
+
+Model defaults to `claude-opus-5`; override with `RESOLVLY_CLASSIFIER_MODEL`.
+
+## Run the API
+
+```bash
+uvicorn app.api:app --reload        # reads ANTHROPIC_API_KEY from .env
+```
+
+- Swagger UI: http://127.0.0.1:8000/docs
+- `GET /health` → `{"status": "ok"}`
+- `POST /classify` — body is an `Issue`, response is a `ClassificationResult`
+
+```bash
+curl -X POST http://127.0.0.1:8000/classify \
+  -H "Content-Type: application/json" \
+  -d '{"description":"I smell gas near the stove, getting stronger.",
+       "property":"12 Maple St","unit":"3B","attachments":[],"reporter":"tenant"}'
+```
+
+Status codes: `422` malformed body, `502` model could not classify, `500` other.
 
 ## Project layout
 
 ```
 app/
   models.py      — Issue, ClassificationResult, ClassificationTrace
-  classifier.py  — Classifier interface, MockClassifier (real LLM classifier: Day 3)
+  classifier.py  — Classifier interface, MockClassifier, AnthropicClassifier
+  policy.py      — deterministic emergency-override (gas, fire, flood, no-heat, collapse)
+  redaction.py   — strips email / phone from returned text
+  prompt.py      — the classification prompt
+  api.py         — FastAPI app: POST /classify, GET /health
+  config.py      — minimal .env loader
+scripts/
+  run_classifier.py  — manual runner against fixture cases
 tests/
   fixtures/cases.json — 15 synthetic evaluation cases
 ```

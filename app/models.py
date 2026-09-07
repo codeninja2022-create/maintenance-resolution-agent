@@ -57,11 +57,21 @@ class ClassificationTrace(BaseModel):
 
 
 class ClassificationResult(BaseModel):
-    """The structured output returned for a given Issue."""
+    """The structured output returned for a given Issue.
+
+    `urgency` is the final urgency after the deterministic emergency-override
+    policy (app/policy.py) has run. `llm_urgency` is what the model returned
+    before the policy. When they differ, `emergency_override_applied` is True.
+    `matched_emergency_rule` names the rule that engaged, if any — it can be set
+    even when no override was needed (the model and the policy agreed).
+    """
 
     category: IssueCategory
     urgency: Urgency
+    llm_urgency: Urgency
     missing_information: List[str] = Field(default_factory=list)
     recommended_action: str
     confidence: float = Field(..., ge=0.0, le=1.0)
+    emergency_override_applied: bool = False
+    matched_emergency_rule: Optional[str] = None
     trace: Optional[ClassificationTrace] = None
