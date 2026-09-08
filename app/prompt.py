@@ -15,7 +15,8 @@ You are given:
 - property / unit / reporter: context only
 
 Return these fields:
-- category: the single best-fitting category from the allowed list
+- category: the single best-fitting category from the allowed list. The list
+  includes `not_maintenance` and `other` — see the scope rule below.
 - urgency: one of emergency | high | normal | low, judged on risk to safety,
   habitability, and property damage:
     emergency = immediate danger to life/safety or rapidly worsening major damage
@@ -29,6 +30,19 @@ Return these fields:
 - recommended_action: one or two sentences on the concrete next step.
 - confidence: 0.0-1.0, your calibrated confidence in the category + urgency.
   Lower it for vague or multi-issue complaints.
+
+Scope rule (what is / isn't a maintenance request):
+- `not_maintenance`: the message is not about a physical repair or building-system
+  problem at all — e.g. a noise or neighbor-behavior complaint, a rent/billing/fee
+  question, a lease or policy question, a general inquiry. Use urgency `low`, and
+  make `recommended_action` route it to the right team (property management,
+  billing, building office) — not a maintenance dispatch. Do not force these into
+  a maintenance category, and do not inflate their urgency.
+- `other`: a genuine maintenance/repair problem that doesn't fit a specific
+  category or is too vague to place yet. Not the same as `not_maintenance`.
+- Shared-property equipment the tenant depends on (parking gate, lobby door,
+  intercom, elevator) is still maintenance — usually `access_lock` — not
+  `not_maintenance`.
 
 Safety and privacy rules:
 - If the complaint even plausibly involves a gas leak, fire/sparks/burning,

@@ -178,5 +178,53 @@
     "expected_urgency": "high",
     "expected_missing_information": ["Can you describe the smell (gas, smoke, burning, musty)?", "Is the smoke detector chirping due to low battery or an actual alarm?"],
     "notes": "Ambiguous, potentially safety-critical case: worth checking whether classifier appropriately flags for review rather than guessing, given proximity to gas/fire keywords without a clear match."
+  },
+  {
+    "id": "case_16",
+    "description": "My neighbor upstairs throws parties every weekend and it's way too loud after midnight, can someone talk to them?",
+    "property": "12 Maple St",
+    "unit": "2B",
+    "attachments": [],
+    "reporter": "tenant",
+    "expected_category": "not_maintenance",
+    "expected_urgency": "low",
+    "expected_missing_information": [],
+    "notes": "Out-of-domain negative case: noise/neighbor-behavior complaint, not a maintenance issue. Tests whether the system correctly recognizes out-of-scope input rather than forcing it into a maintenance category with inflated urgency."
+  },
+  {
+    "id": "case_17",
+    "description": "I think I was overcharged on this month's rent, can someone check my account and explain the extra fee?",
+    "property": "45 Oak Ave",
+    "unit": "1A",
+    "attachments": [],
+    "reporter": "tenant",
+    "expected_category": "not_maintenance",
+    "expected_urgency": "low",
+    "expected_missing_information": [],
+    "notes": "Out-of-domain negative case: billing/rent question, not a maintenance issue. Same purpose as case_16 — checks the system doesn't misclassify unrelated requests as low-grade maintenance."
+  },
+  {
+    "id": "case_18",
+    "description": "The gate code for the parking lot hasn't been working for a few days, I've had to wait for someone to let me in.",
+    "property": "18 Pine Rd",
+    "unit": "2A",
+    "attachments": [],
+    "reporter": "tenant",
+    "expected_category": "access_lock",
+    "expected_urgency": "normal",
+    "expected_missing_information": [],
+    "notes": "Borderline case: not a clean 'not_maintenance' negative, but also not a typical unit-level maintenance issue — tests whether the system reasonably classifies shared-property access equipment as access_lock rather than forcing it elsewhere or over-escalating."
+  },
+  {
+    "id": "case_19",
+    "description": "What is the weather like today?",
+    "property": "9 Birch Ln",
+    "unit": "2C",
+    "attachments": [],
+    "reporter": "tenant",
+    "expected_category": "not_maintenance",
+    "expected_urgency": "low",
+    "expected_missing_information": [],
+    "notes": "Out-of-domain negative case: complete non sequitur, zero property relevance. Tests whether the system cleanly recognizes 'not applicable' rather than manufacturing a maintenance interpretation out of nothing. Reuses not_maintenance category rather than a separate enum value — the actionable signal (does a property manager need to act on this?) is the same 'no' as case_16/case_17."
   }
 ]
