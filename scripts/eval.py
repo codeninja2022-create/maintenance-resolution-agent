@@ -88,6 +88,13 @@ def compute_metrics(rows: list) -> dict:
     latencies = [r["latency_ms"] for r in ok if r.get("latency_ms") is not None]
     costs = [r["estimated_cost"] for r in ok if r.get("estimated_cost") is not None]
 
+    ood = [r for r in ok if r["expected_category"] == "not_maintenance"]
+    ood_correct = sum(
+        1
+        for r in ood
+        if r["got_category"] == "not_maintenance" and r["got_urgency"] in ("low", "normal")
+    )
+
     return {
         "n_cases": n,
         "valid_output_rate": round(n_ok / n, 3),
@@ -102,6 +109,8 @@ def compute_metrics(rows: list) -> dict:
         "missing_info_detection_accuracy": rate(
             lambda r: r["got_missing_info"] == r["expected_missing_info"], ok
         ),
+        "out_of_domain_cases": len(ood),
+        "out_of_domain_correct": ood_correct,
         "pii_leak_count": sum(1 for r in ok if r.get("pii_leaked")),
         "avg_latency_ms": round(statistics.mean(latencies), 1) if latencies else None,
         "avg_cost_usd": round(statistics.mean(costs), 5) if costs else None,
@@ -114,7 +123,7 @@ def write_summary(metrics: dict, rows: list, model: str) -> None:
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     lines = [
-        "# Phase 1 evaluation — 15 fixture cases",
+        f"# Evaluation — {len(rows)} fixture cases",
         "",
         f"Model: `{model}` · Run: {ts}",
         "",
@@ -128,6 +137,7 @@ def write_summary(metrics: dict, rows: list, model: str) -> None:
         f"| Emergency recall (of 5 emergencies) | {metrics['emergency_recall']} |",
         f"| Emergency precision | {metrics['emergency_precision']} |",
         f"| Missing-info detection accuracy | {metrics['missing_info_detection_accuracy']} |",
+        f"| Out-of-domain handled correctly | {metrics['out_of_domain_correct']}/{metrics['out_of_domain_cases']} |",
         f"| PII leaks | {metrics['pii_leak_count']} |",
         f"| Avg latency | {metrics['avg_latency_ms']} ms |",
         f"| Avg cost / case | ${metrics['avg_cost_usd']} |",

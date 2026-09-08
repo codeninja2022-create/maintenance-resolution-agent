@@ -1,21 +1,22 @@
-# Phase 1 evaluation — 15 fixture cases
+# Evaluation — 19 fixture cases
 
-Model: `claude-opus-5` · Run: 2026-09-07 22:49 UTC
+Model: `claude-opus-5` · Run: 2026-09-08 11:52 UTC
 
 ## Metrics
 
 | Metric | Value |
 |---|---|
 | Valid structured-output rate | 1.0 |
-| Category accuracy | 0.867 |
-| Urgency accuracy | 0.733 |
+| Category accuracy | 0.947 |
+| Urgency accuracy | 0.789 |
 | Emergency recall (of 5 emergencies) | 1.0 |
 | Emergency precision | 0.714 |
-| Missing-info detection accuracy | 0.267 |
+| Missing-info detection accuracy | 0.316 |
+| Out-of-domain handled correctly | 3/3 |
 | PII leaks | 0 |
-| Avg latency | 5485.4 ms |
-| Avg cost / case | $0.01406 |
-| Total run cost | $0.2109 |
+| Avg latency | 5189.8 ms |
+| Avg cost / case | $0.01474 |
+| Total run cost | $0.28 |
 
 ## Per-case
 
@@ -34,15 +35,31 @@ Model: `claude-opus-5` · Run: 2026-09-07 22:49 UTC
 | case_11 | other / other ✓ | low / normal / normal ✗ | True / True ✓ | — |
 | case_12 | hvac / hvac ✓ | normal / normal / normal ✓ | False / True ✗ | — |
 | case_13 | water_leak / water_leak ✓ | high / emergency / emergency ✗ | True / True ✓ | — |
-| case_14 | plumbing / water_leak ✗ | high / high / high ✓ | False / True ✗ | — |
+| case_14 | plumbing / plumbing ✓ | high / high / high ✓ | False / True ✗ | — |
 | case_15 | other / gas ✗ | high / emergency / emergency ✗ | True / True ✓ | — |
+| case_16 | not_maintenance / not_maintenance ✓ | low / low / low ✓ | False / False ✓ | — |
+| case_17 | not_maintenance / not_maintenance ✓ | low / low / low ✓ | False / True ✗ | — |
+| case_18 | access_lock / access_lock ✓ | normal / normal / normal ✓ | False / True ✗ | — |
+| case_19 | not_maintenance / not_maintenance ✓ | low / low / low ✓ | False / False ✓ | — |
 
 ## Read (updated by hand after each run)
 
-**Strong.** Category (0.87) and the safety layer. Emergency recall is 1.0 — every one of the 5 true emergencies was flagged, and the deterministic policy fired correctly on all 5 (not relied on: the model independently agreed each time). Zero PII leaks. Zero malformed outputs across 15 calls.
+**2026-09-08, 19 cases (added `not_maintenance` category + case_16/17/19 out-of-domain, case_18 borderline).**
 
-**Shaky — the model runs hot on urgency.** Urgency accuracy is 0.73 and *every one of the 4 misses is an over-escalation* (case_10 normal→high, case_11 low→normal, case_13 high→emergency, case_15 high→emergency). Emergency precision is 0.71 — the model called 7 emergencies, 2 of them (case_13, case_15) wrong, both LLM-driven not policy-driven. For a triage tool this bias is arguably the safe direction, but it inflates the emergency queue.
-
-**Shaky — `missing_information` is low-signal.** Detection accuracy 0.27: the model attaches clarifying questions to 14 of 15 cases, including ones the fixtures consider fully actionable. It never says "I have enough to act." As-is the field can't be used to gate human review.
-
-**Cost/latency.** $0.014 and 5.5 s per case on `claude-opus-5` — fine for a demo, expensive for volume. Worth A/B-ing Sonnet/Haiku before Phase 3.
+- **Out-of-domain detection: 3/3.** case_16 (noise), case_17 (billing), case_19
+  ("what's the weather") all → `not_maintenance` / `low` / conf 0.95, no
+  missing-info questions on 16 and 19. The scope-rule prompt block works.
+- **Borderline 1/1.** case_18 (parking-gate code) → `access_lock` / `normal` /
+  0.88 — correctly kept as maintenance, not over-escalated.
+- **No regression** from the enum/prompt change: same single category miss
+  (case_15 other→gas) and same 4 urgency over-escalations (case_10/11/13/15).
+- **Run-to-run variance is real.** opus-5 with no temperature control: between
+  the 18- and 19-case runs, case_14 category flipped (water_leak↔plumbing) and
+  case_01's `missing_information` flipped (empty↔populated). Single-run numbers
+  carry roughly ±1 case of noise — for Phase 3, average 3 runs or treat
+  sub-0.05 metric moves as noise.
+- Urgency bias unchanged: 15/19 correct, every miss a +1 over-escalation on a
+  deliberately-ambiguous case. case_13 still the confidently-wrong one
+  (emergency @ 0.90, expected high).
+- `missing_information` still noisy (detection 0.32).
+- Cost/latency: $0.015 / 5.2 s per case.

@@ -28,7 +28,7 @@ def test_issue_model_accepts_valid_data():
 
 def test_all_fixture_cases_parse_as_valid_issues():
     cases = load_fixture_cases()
-    assert len(cases) == 15
+    assert len(cases) == 19
     for case in cases:
         issue = Issue(
             description=case["description"],

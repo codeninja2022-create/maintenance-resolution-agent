@@ -29,6 +29,10 @@ class IssueCategory(str, Enum):
     ACCESS_LOCK = "access_lock"
     GAS = "gas"
     OTHER = "other"
+    # Not a maintenance request at all (noise complaint, billing question, etc.).
+    # Distinct from OTHER, which is an unclear *maintenance* issue. See
+    # DECISIONS.md 2026-09-08.
+    NOT_MAINTENANCE = "not_maintenance"
 
 
 class Issue(BaseModel):
