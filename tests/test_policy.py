@@ -37,6 +37,18 @@ def test_emergency_rules_force_emergency_even_when_llm_says_low(case_id, expecte
     assert decision.matched_rule == expected_rule
 
 
+def test_adversarial_gas_case_still_forces_emergency_when_llm_downplays_it():
+    """case_20: gas smell framed casually + bundled with a trivial complaint.
+
+    Proves the override is load-bearing — it fires on *disagreement*, not just
+    when the LLM already agrees. Simulates the LLM's tone-based read as 'low'.
+    """
+    decision = apply_emergency_override(CASES["case_20"]["description"], Urgency.LOW)
+    assert decision.urgency == Urgency.EMERGENCY
+    assert decision.override_applied is True
+    assert decision.matched_rule == "gas_leak"
+
+
 def test_override_not_flagged_when_llm_already_said_emergency():
     decision = apply_emergency_override(CASES["case_01"]["description"], Urgency.EMERGENCY)
     assert decision.urgency == Urgency.EMERGENCY

@@ -5,11 +5,21 @@ PII redaction of returned text, trace/cost population, and the malformed-output
 retry.
 """
 
+import json
+from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
 
 from app.classifier import AnthropicClassifier, ClassifierError, _LLMClassification
 from app.models import Issue, Urgency
+
+_CASES = {
+    c["id"]: c
+    for c in json.loads(
+        (Path(__file__).parent / "fixtures" / "cases.json").read_text()
+    )
+}
 
 
 class FakeUsage:
@@ -68,6 +78,7 @@ def test_emergency_override_beats_the_model():
     llm = _LLMClassification(
         category="gas",
         urgency="low",  # model got it wrong
+        urgency_rationale="Seems minor.",
         missing_information=[],
         recommended_action="Schedule a routine visit.",
         confidence=0.4,
@@ -80,10 +91,48 @@ def test_emergency_override_beats_the_model():
     assert result.matched_emergency_rule == "gas_leak"
 
 
+@pytest.mark.parametrize(
+    "case_id, expected_rule",
+    [
+        ("case_01", "gas_leak"),
+        ("case_02", "active_flooding"),
+        ("case_03", "no_heat_freezing"),
+        ("case_04", "fire_or_sparks"),
+        ("case_05", "structural_collapse"),
+    ],
+)
+def test_override_forces_emergency_for_every_hardcoded_category_when_llm_says_low(
+    case_id, expected_rule
+):
+    """Full classify() path: mock the LLM to return urgency='low' for each of the
+    five hardcoded emergency categories and assert the deterministic override
+    forces the final urgency to emergency and sets emergency_override_applied.
+
+    Proves the override works regardless of whether the real model ever errs.
+    """
+    case = _CASES[case_id]
+    llm = _LLMClassification(
+        category=case["expected_category"],
+        urgency="low",  # model deliberately wrong
+        urgency_rationale="Model deliberately downplays it for the test.",
+        missing_information=[],
+        recommended_action="Schedule a routine visit next week.",
+        confidence=0.3,
+    )
+    clf = AnthropicClassifier(client=FakeClient([FakeParsedResponse(llm)]))
+    result = clf.classify(make_issue(case["description"]))
+
+    assert result.llm_urgency == Urgency.LOW
+    assert result.urgency == Urgency.EMERGENCY
+    assert result.emergency_override_applied is True
+    assert result.matched_emergency_rule == expected_rule
+
+
 def test_pii_is_redacted_from_returned_text():
     llm = _LLMClassification(
         category="plumbing",
         urgency="normal",
+        urgency_rationale="Contained drip, call tenant back at 555-123-4567 to confirm.",
         missing_information=["Confirm callback number 555-123-4567"],
         recommended_action="Call the tenant at (555) 987-6543 or tenant@example.com.",
         confidence=0.7,
@@ -94,12 +143,14 @@ def test_pii_is_redacted_from_returned_text():
     assert "555" not in result.recommended_action
     assert "@" not in result.recommended_action
     assert "555-123-4567" not in result.missing_information[0]
+    assert "555-123-4567" not in result.urgency_rationale
 
 
 def test_trace_and_cost_are_populated():
     llm = _LLMClassification(
         category="appliance",
         urgency="normal",
+        urgency_rationale="Appliance broken but no safety risk.",
         missing_information=[],
         recommended_action="Dispatch an appliance technician.",
         confidence=0.8,
@@ -121,6 +172,7 @@ def test_retry_on_malformed_then_success():
     good = _LLMClassification(
         category="hvac",
         urgency="normal",
+        urgency_rationale="Reduced cooling, no safety risk.",
         missing_information=[],
         recommended_action="Send HVAC tech to inspect the unit.",
         confidence=0.75,
@@ -142,6 +194,7 @@ def test_retry_when_parse_raises_validation_error():
     good = _LLMClassification(
         category="pest",
         urgency="normal",
+        urgency_rationale="Pest issue, not time-critical.",
         missing_information=[],
         recommended_action="Schedule pest control.",
         confidence=0.9,

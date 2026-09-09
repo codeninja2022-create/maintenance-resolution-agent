@@ -13,6 +13,7 @@ MINIMAL = dict(
     category="plumbing",
     urgency="normal",
     llm_urgency="normal",
+    urgency_rationale="Contained leak, days not hours.",
     recommended_action="Dispatch a plumber.",
     confidence=0.7,
 )
@@ -55,6 +56,7 @@ def test_output_json_keys_are_the_documented_contract():
         "category",
         "urgency",
         "llm_urgency",
+        "urgency_rationale",
         "missing_information",
         "recommended_action",
         "confidence",

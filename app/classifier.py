@@ -67,6 +67,7 @@ class MockClassifier(Classifier):
             category="other",
             urgency="low",
             llm_urgency="low",
+            urgency_rationale="Mock classifier — fixed low urgency, no real assessment.",
             missing_information=[],
             recommended_action="Mock response — no real classification performed.",
             confidence=0.5,
@@ -83,6 +84,7 @@ class _LLMClassification(BaseModel):
 
     category: IssueCategory
     urgency: Urgency
+    urgency_rationale: str  # one line, always populated
     missing_information: List[str]  # empty list when the complaint is already actionable
     recommended_action: str
     confidence: float = Field(..., ge=0.0, le=1.0)
@@ -127,6 +129,7 @@ class AnthropicClassifier(Classifier):
             category=llm_result.category,
             urgency=decision.urgency,
             llm_urgency=llm_result.urgency,
+            urgency_rationale=redact_text(llm_result.urgency_rationale),
             missing_information=redact_all(llm_result.missing_information),
             recommended_action=redact_text(llm_result.recommended_action),
             confidence=llm_result.confidence,

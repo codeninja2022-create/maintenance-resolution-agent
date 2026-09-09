@@ -52,15 +52,21 @@ def run_all(cases: list) -> list:
             rows.append(row)
             continue
 
-        pii_leaked = contains_pii(r.recommended_action) or any(
-            contains_pii(m) for m in r.missing_information
+        pii_leaked = (
+            contains_pii(r.recommended_action)
+            or contains_pii(r.urgency_rationale)
+            or any(contains_pii(m) for m in r.missing_information)
         )
         row.update(
             {
                 "got_category": r.category.value,
                 "got_urgency": r.urgency.value,
                 "got_llm_urgency": r.llm_urgency.value,
+                "urgency_rationale": r.urgency_rationale,
+                "recommended_action": r.recommended_action,
+                "missing_information": list(r.missing_information),
                 "got_missing_info": bool(r.missing_information),
+                "got_missing_info_count": len(r.missing_information),
                 "emergency_override_applied": r.emergency_override_applied,
                 "matched_emergency_rule": r.matched_emergency_rule,
                 "confidence": r.confidence,
@@ -106,7 +112,11 @@ def compute_metrics(rows: list) -> dict:
         "emergency_precision": rate(
             lambda r: r["expected_urgency"] == "emergency", predicted_emergencies
         ),
-        "missing_info_detection_accuracy": rate(
+        # Corrected 2026-09-09: expected_missing_information is now
+        # "dispatch-actionable follow-up questions", not a vagueness flag.
+        # Scored as: did the model produce questions exactly when the case
+        # warrants them (non-empty ⇔ non-empty).
+        "missing_info_appropriateness": rate(
             lambda r: r["got_missing_info"] == r["expected_missing_info"], ok
         ),
         "out_of_domain_cases": len(ood),
@@ -136,7 +146,7 @@ def write_summary(metrics: dict, rows: list, model: str) -> None:
         f"| Urgency accuracy | {metrics['urgency_accuracy']} |",
         f"| Emergency recall (of 5 emergencies) | {metrics['emergency_recall']} |",
         f"| Emergency precision | {metrics['emergency_precision']} |",
-        f"| Missing-info detection accuracy | {metrics['missing_info_detection_accuracy']} |",
+        f"| Missing-info appropriateness | {metrics['missing_info_appropriateness']} |",
         f"| Out-of-domain handled correctly | {metrics['out_of_domain_correct']}/{metrics['out_of_domain_cases']} |",
         f"| PII leaks | {metrics['pii_leak_count']} |",
         f"| Avg latency | {metrics['avg_latency_ms']} ms |",
@@ -162,6 +172,16 @@ def write_summary(metrics: dict, rows: list, model: str) -> None:
         if r["emergency_override_applied"]:
             ov += " (forced)"
         lines.append(f"| {r['id']} | {cat} | {urg} | {mi} | {ov} |")
+
+    lines += ["", "## Urgency rationale", ""]
+    for r in rows:
+        if "error" in r:
+            continue
+        mark = "" if r["got_urgency"] == r["expected_urgency"] else "  ⚠ wrong"
+        lines.append(
+            f"- **{r['id']}** (conf {r['confidence']}, "
+            f"{r['expected_urgency']}→{r['got_urgency']}{mark}): {r['urgency_rationale']}"
+        )
 
     lines += [
         "",
