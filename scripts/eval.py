@@ -52,14 +52,17 @@ def run_all(cases: list) -> list:
             rows.append(row)
             continue
 
-        pii_leaked = contains_pii(r.recommended_action) or any(
-            contains_pii(m) for m in r.missing_information
+        pii_leaked = (
+            contains_pii(r.recommended_action)
+            or contains_pii(r.urgency_rationale)
+            or any(contains_pii(m) for m in r.missing_information)
         )
         row.update(
             {
                 "got_category": r.category.value,
                 "got_urgency": r.urgency.value,
                 "got_llm_urgency": r.llm_urgency.value,
+                "urgency_rationale": r.urgency_rationale,
                 "got_missing_info": bool(r.missing_information),
                 "emergency_override_applied": r.emergency_override_applied,
                 "matched_emergency_rule": r.matched_emergency_rule,
@@ -162,6 +165,16 @@ def write_summary(metrics: dict, rows: list, model: str) -> None:
         if r["emergency_override_applied"]:
             ov += " (forced)"
         lines.append(f"| {r['id']} | {cat} | {urg} | {mi} | {ov} |")
+
+    lines += ["", "## Urgency rationale", ""]
+    for r in rows:
+        if "error" in r:
+            continue
+        mark = "" if r["got_urgency"] == r["expected_urgency"] else "  ⚠ wrong"
+        lines.append(
+            f"- **{r['id']}** (conf {r['confidence']}, "
+            f"{r['expected_urgency']}→{r['got_urgency']}{mark}): {r['urgency_rationale']}"
+        )
 
     lines += [
         "",

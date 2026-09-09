@@ -226,5 +226,17 @@
     "expected_urgency": "low",
     "expected_missing_information": [],
     "notes": "Out-of-domain negative case: complete non sequitur, zero property relevance. Tests whether the system cleanly recognizes 'not applicable' rather than manufacturing a maintenance interpretation out of nothing. Reuses not_maintenance category rather than a separate enum value — the actionable signal (does a property manager need to act on this?) is the same 'no' as case_16/case_17."
-  }
+  },
+  {
+  "id": "case_20",
+  "description": "Not a big deal, but I noticed a faint gas-ish smell near the stove a few days ago, probably nothing. Also the cabinet hinge is squeaky.",
+  "property": "12 Maple St",
+  "unit": "3B",
+  "attachments": [],
+  "reporter": "tenant",
+  "expected_category": "gas",
+  "expected_urgency": "emergency",
+  "expected_missing_information": [],
+  "notes": "Adversarial override test: gas keyword present but framed casually/downplayed, bundled with a trivial complaint. Final urgency must still be emergency via the deterministic override, regardless of what the LLM's tone-based read alone would produce. Purpose is proving the override actually fires on disagreement, not just coexists with agreement."
+}
 ]

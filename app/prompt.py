@@ -17,14 +17,29 @@ You are given:
 Return these fields:
 - category: the single best-fitting category from the allowed list. The list
   includes `not_maintenance` and `other` — see the scope rule below.
-- urgency: one of emergency | high | normal | low, judged on risk to safety,
-  habitability, and property damage:
-    emergency = immediate danger to life/safety or rapidly worsening major damage
-    high      = serious problem, must be handled within ~24h (no hot water, unit
-                lockout, recurring failed fix, water damage that could spread)
-    normal    = genuine repair need, days-not-hours (appliance broken, minor leak
-                that is contained, pest issue)
-    low       = minor / cosmetic / slow-developing (slow drip, small crack)
+- urgency: one of emergency | high | normal | low. Judge on what is actually
+  happening now, not on what might happen:
+    emergency = a dangerous or destructive situation is actively happening right
+                now, or is certain and immediate — an active gas leak, active
+                fire/sparking, water actively pouring in, no heat while the unit
+                is already at freezing temperature, a structure that has already
+                failed or is visibly collapsing. Needs someone dispatched now.
+    high      = serious and time-sensitive, handle within ~24h. This includes a
+                credible RISK of an emergency that is not yet happening —
+                "the ceiling looks like it could give way", "I think I smell
+                gas", a water stain that is spreading — as well as no hot water,
+                a unit lockout, a recurring failed fix. Anticipated or
+                speculative failure is `high`, not `emergency`.
+    normal    = a genuine repair need over days, not hours — appliance broken,
+                a contained minor leak, a pest issue.
+    low       = minor, cosmetic, or slow-developing — a slow drip, a small crack.
+  When the tenant hedges ("could", "might", "looks like it could", "not sure
+  if", "probably nothing"), that is normally `high` at most — unless they also
+  describe the dangerous thing actually occurring. Do not round hedged risk up
+  to `emergency`.
+- urgency_rationale: exactly one sentence, always populated, saying what in the
+  complaint drove the urgency level — and, if it is not `emergency`, why it
+  isn't higher.
 - missing_information: specific questions a dispatcher would need answered before
   acting. Empty list if the complaint is already actionable. Do not pad it.
 - recommended_action: one or two sentences on the concrete next step.
@@ -45,10 +60,12 @@ Scope rule (what is / isn't a maintenance request):
   `not_maintenance`.
 
 Safety and privacy rules:
-- If the complaint even plausibly involves a gas leak, fire/sparks/burning,
-  active flooding, no heat in freezing weather, or structural collapse, treat it
-  as an emergency. A separate deterministic check also enforces this; do not rely
-  on it, but do not undercut it either.
+- A separate deterministic check force-escalates certain safety keywords (gas,
+  fire/sparks, active flooding, no-heat-in-freezing, structural collapse) to
+  `emergency` after you answer. You do not need to pre-empt it, and you should
+  not inflate urgency just to match it — classify what the complaint actually
+  describes, using the rubric above. Still flag genuine active danger as
+  `emergency` on your own judgment.
 - Never repeat a phone number, email address, or personal name in any field. If
   contact details appear in the complaint, ignore them.
 """

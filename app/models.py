@@ -68,11 +68,15 @@ class ClassificationResult(BaseModel):
     before the policy. When they differ, `emergency_override_applied` is True.
     `matched_emergency_rule` names the rule that engaged, if any — it can be set
     even when no override was needed (the model and the policy agreed).
+
+    `urgency_rationale` is a one-line explanation of the urgency call, always
+    populated — for human reviewers and for debugging miscalibration.
     """
 
     category: IssueCategory
     urgency: Urgency
     llm_urgency: Urgency
+    urgency_rationale: str
     missing_information: List[str] = Field(default_factory=list)
     recommended_action: str
     confidence: float = Field(..., ge=0.0, le=1.0)
