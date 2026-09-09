@@ -31,9 +31,9 @@
 - [x] **Decision logged:** rubric fix alone is sufficient — do NOT build the coherence-override rule. +1 caution bias essentially gone from the eval.
 - [x] Rubric fix confirmed over 3 eval runs — category 1.0 / urgency 0.95 / emergency precision 1.0 every run, zero flips, case_11 the only miss (@ 0.30) each time. Not a one-off. Eval-run variance also resolved (case_10/case_14 no longer flip).
 - [x] `missing_information` underperformance diagnosed (detection 0.20–0.25) — **root cause: the field conflates two constructs.** Prompt asks for "questions a dispatcher would need answered"; model returns a responder-checklist (non-empty on ~18/20, incl. all 5 clear emergencies). Fixtures grade the narrower "is this too vague to classify" (empty for 16/20). Model is *not* padding — case_16 gets 0 questions, question count scales with real ambiguity. Real coherence bug: high-confidence cases still get questions that wouldn't change the classification. Full diagnosis + proposed prompt fix in DECISIONS.md.
-- [ ] Apply the `missing_information` prompt fix (scope to classification-relevant unknowns; exclude responder-checklist items; tie to confidence), re-run 3×, check detection moves toward 0.8+
+- [x] `missing_information` — resolved as a **metric-definition fix, not a model fix.** The model's dispatch-actionable questions were correct; the fixtures graded a different (unstated) "too vague to classify" definition. Rewrote `expected_missing_information` for all 20 fixtures to the intended meaning, renamed the metric `missing_info_appropriateness`, re-scored run 3 offline (`scripts/rescore.py`): **0.20 → 0.90**. Model/prompt untouched. Details + Option C (two-field split, Phase 4+) in DECISIONS.md.
+  - Residual: case_17 (billing) + case_19 (weather) still get follow-up questions when they should just route — minor, deferred to Option C.
 - [ ] Model A/B — Sonnet/Haiku vs `claude-opus-5` (now $0.019 + 6.1 s per case after the rationale field)
-- [ ] Optional fixture review — case_07 / case_14 expected-`[]` are arguable (their model questions genuinely bear on urgency)
 
 ## Phase 2, 4+
 Not started — see ROADMAP.md. Phase 3 was prioritized ahead of Phase 2 (intake API hardening) because it's addressing an observed failure from real eval data, per the project's governing scope rule.

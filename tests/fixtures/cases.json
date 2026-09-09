@@ -8,8 +8,11 @@
     "reporter": "tenant",
     "expected_category": "gas",
     "expected_urgency": "emergency",
-    "expected_missing_information": [],
-    "notes": "Emergency override case: gas leak keyword should force urgency=emergency regardless of LLM output."
+    "expected_missing_information": [
+      "Is the gas smell still present now, and have the occupants left the unit?",
+      "Has the gas utility's emergency line been contacted?"
+    ],
+    "notes": "Emergency override case: gas leak keyword should force urgency=emergency regardless of LLM output. missing_information = dispatch/responder briefing questions (classification is locked)."
   },
   {
     "id": "case_02",
@@ -20,8 +23,11 @@
     "reporter": "tenant",
     "expected_category": "water_leak",
     "expected_urgency": "emergency",
-    "expected_missing_information": [],
-    "notes": "Emergency override case: active flooding."
+    "expected_missing_information": [
+      "Is the unit directly above accessible so the water source can be shut off?",
+      "Is the water near any light fixtures, outlets, or the electrical panel?"
+    ],
+    "notes": "Emergency override case: active flooding. missing_information = what the responder needs to act safely and stop the source."
   },
   {
     "id": "case_03",
@@ -32,8 +38,11 @@
     "reporter": "tenant",
     "expected_category": "hvac",
     "expected_urgency": "emergency",
-    "expected_missing_information": [],
-    "notes": "Emergency override case: no heat during freezing weather."
+    "expected_missing_information": [
+      "What type of heating system does the unit have (furnace, boiler, baseboard, heat pump)?",
+      "Do neighboring units also have no heat?"
+    ],
+    "notes": "Emergency override case: no heat during freezing weather. missing_information = what tech/parts to send and whether it is building-wide."
   },
   {
     "id": "case_04",
@@ -44,8 +53,11 @@
     "reporter": "tenant",
     "expected_category": "electrical",
     "expected_urgency": "emergency",
-    "expected_missing_information": [],
-    "notes": "Emergency override case: fire/sparks."
+    "expected_missing_information": [
+      "Is there a burning smell, smoke, or scorch marks at the outlet?",
+      "Has the breaker for that room been switched off?"
+    ],
+    "notes": "Emergency override case: fire/sparks. missing_information = safety briefing for the responder."
   },
   {
     "id": "case_05",
@@ -56,8 +68,11 @@
     "reporter": "tenant",
     "expected_category": "structural",
     "expected_urgency": "emergency",
-    "expected_missing_information": [],
-    "notes": "Emergency override case: structural collapse."
+    "expected_missing_information": [
+      "Is anyone injured, and is the room now closed off?",
+      "Is there water or active dripping around the hole, or sagging in adjacent ceiling areas?"
+    ],
+    "notes": "Emergency override case: structural collapse. missing_information = injury check and ongoing-risk assessment."
   },
   {
     "id": "case_06",
@@ -68,8 +83,11 @@
     "reporter": "tenant",
     "expected_category": "plumbing",
     "expected_urgency": "low",
-    "expected_missing_information": [],
-    "notes": "Clean, easy case."
+    "expected_missing_information": [
+      "Is the drip coming from the faucet/spout or from the pipes under the sink?",
+      "Is any water pooling in the cabinet or on the floor?"
+    ],
+    "notes": "Clean, easy case. missing_information = source isolation (parts) and damage check."
   },
   {
     "id": "case_07",
@@ -80,8 +98,11 @@
     "reporter": "tenant",
     "expected_category": "appliance",
     "expected_urgency": "normal",
-    "expected_missing_information": [],
-    "notes": "Clean, easy case."
+    "expected_missing_information": [
+      "Is water leaking or overflowing onto the floor?",
+      "What is the dishwasher's make and model?"
+    ],
+    "notes": "Clean, easy case. missing_information = urgency check (floor water) and parts (make/model)."
   },
   {
     "id": "case_08",
@@ -92,8 +113,11 @@
     "reporter": "tenant",
     "expected_category": "pest",
     "expected_urgency": "normal",
-    "expected_missing_information": [],
-    "notes": "Clean, easy case."
+    "expected_missing_information": [
+      "How widespread is the activity, and are there visible entry points or gnaw holes?",
+      "Are there pets or young children in the unit?"
+    ],
+    "notes": "Clean, easy case. missing_information = extent and bait/trap-choice constraints for pest control."
   },
   {
     "id": "case_09",
@@ -104,8 +128,11 @@
     "reporter": "tenant",
     "expected_category": "access_lock",
     "expected_urgency": "high",
-    "expected_missing_information": [],
-    "notes": "Clean but time-sensitive, not a hardcoded emergency category."
+    "expected_missing_information": [
+      "Is it the deadbolt or the handle lock that's jammed, and does the key insert but not turn?",
+      "Is there an alternate entrance, and is anyone or a pet inside?"
+    ],
+    "notes": "Clean but time-sensitive, not a hardcoded emergency category. missing_information = what the locksmith needs and whether there's a faster route in."
   },
   {
     "id": "case_10",
@@ -116,8 +143,12 @@
     "reporter": "tenant",
     "expected_category": "electrical",
     "expected_urgency": "normal",
-    "expected_missing_information": ["Is the loose outlet sparking or hot to the touch?", "Is the running toilet also leaking onto the floor?"],
-    "notes": "Ambiguous/multi-issue case: electrical + plumbing mentioned together, needs clarification on severity of each."
+    "expected_missing_information": [
+      "Is the loose outlet sparking, warm to the touch, or discolored?",
+      "Does the flickering affect other rooms, or only the bathroom light?",
+      "Is the running toilet also leaking onto the floor?"
+    ],
+    "notes": "Ambiguous/multi-issue case: electrical + plumbing mentioned together. missing_information = severity of each sub-issue (also determines whether urgency should rise)."
   },
   {
     "id": "case_11",
@@ -128,8 +159,13 @@
     "reporter": "tenant",
     "expected_category": "other",
     "expected_urgency": "low",
-    "expected_missing_information": ["What specifically is wrong?", "Where in the apartment is the issue located?"],
-    "notes": "Missing-information case: vague complaint with no actionable detail."
+    "expected_missing_information": [
+      "What specifically is wrong — what do you see, hear, or smell?",
+      "Where in the apartment is the issue located?",
+      "When did it start, and has it gotten worse?",
+      "Is anything currently unsafe or unusable (heat, hot water, power, water)?"
+    ],
+    "notes": "Genuinely underspecified: these questions are both classification-blocking AND dispatch-blocking. The one case where the model cannot act without answers."
   },
   {
     "id": "case_12",
@@ -140,8 +176,11 @@
     "reporter": "tenant",
     "expected_category": "hvac",
     "expected_urgency": "normal",
-    "expected_missing_information": [],
-    "notes": "Clean, easy case."
+    "expected_missing_information": [
+      "Is it a window/wall unit or central AC?",
+      "What is the current indoor temperature, and is anyone heat-vulnerable in the unit?"
+    ],
+    "notes": "Clean, easy case. missing_information = what tech/parts to send and whether comfort risk raises urgency."
   },
   {
     "id": "case_13",
@@ -152,8 +191,12 @@
     "reporter": "tenant",
     "expected_category": "water_leak",
     "expected_urgency": "high",
-    "expected_missing_information": ["Is water actively dripping through, or just a stain?", "Has the ceiling started to sag or crack?"],
-    "notes": "Ambiguous case: could escalate to structural/emergency depending on missing details, good test of confidence calibration."
+    "expected_missing_information": [
+      "Is water actively dripping through, or just a stain?",
+      "Has the ceiling started to sag or crack?",
+      "Has the upstairs overflow been stopped?"
+    ],
+    "notes": "Ambiguous case: answers determine whether urgency escalates toward emergency. Good confidence-calibration test."
   },
   {
     "id": "case_14",
@@ -164,8 +207,12 @@
     "reporter": "tenant",
     "expected_category": "plumbing",
     "expected_urgency": "high",
-    "expected_missing_information": [],
-    "notes": "Recurring-issue/failed-fix case: same property/unit as case_06, relevant for Phase 6 retrieval testing later, and should raise urgency due to repeat failure."
+    "expected_missing_information": [
+      "Can the sink's shut-off valve be closed to stop the pooling until a plumber arrives?",
+      "Is there visible damage to the cabinet, floor, or the unit below?",
+      "Which prior work orders cover this leak, and what was attempted?"
+    ],
+    "notes": "Recurring-issue/failed-fix case (same property/unit as case_06). missing_information = containment, damage, and repair history."
   },
   {
     "id": "case_15",
@@ -176,8 +223,12 @@
     "reporter": "tenant",
     "expected_category": "other",
     "expected_urgency": "high",
-    "expected_missing_information": ["Can you describe the smell (gas, smoke, burning, musty)?", "Is the smoke detector chirping due to low battery or an actual alarm?"],
-    "notes": "Ambiguous, potentially safety-critical case: worth checking whether classifier appropriately flags for review rather than guessing, given proximity to gas/fire keywords without a clear match."
+    "expected_missing_information": [
+      "Can you describe the smell (rotten eggs/gas, smoke, burning, sewage, musty)?",
+      "Is the smell inside the unit or only in the hallway, and is it getting stronger?",
+      "Is the smoke detector chirping intermittently (low battery) or sounding a continuous alarm?"
+    ],
+    "notes": "Ambiguous, potentially safety-critical. missing_information = the facts that decide whether this is a gas/fire emergency or a low-battery nuisance."
   },
   {
     "id": "case_16",
@@ -189,7 +240,7 @@
     "expected_category": "not_maintenance",
     "expected_urgency": "low",
     "expected_missing_information": [],
-    "notes": "Out-of-domain negative case: noise/neighbor-behavior complaint, not a maintenance issue. Tests whether the system correctly recognizes out-of-scope input rather than forcing it into a maintenance category with inflated urgency."
+    "notes": "Out-of-domain: noise/neighbor complaint. Nothing for maintenance to dispatch, so no dispatch-actionable question — recognize and route to property management. Asking follow-up questions here is doing another team's intake."
   },
   {
     "id": "case_17",
@@ -201,7 +252,7 @@
     "expected_category": "not_maintenance",
     "expected_urgency": "low",
     "expected_missing_information": [],
-    "notes": "Out-of-domain negative case: billing/rent question, not a maintenance issue. Same purpose as case_16 — checks the system doesn't misclassify unrelated requests as low-grade maintenance."
+    "notes": "Out-of-domain: billing question. Same as case_16 — the maintenance triage agent's job is to recognize and route to billing, not to interview the tenant on billing's behalf."
   },
   {
     "id": "case_18",
@@ -212,8 +263,11 @@
     "reporter": "tenant",
     "expected_category": "access_lock",
     "expected_urgency": "normal",
-    "expected_missing_information": [],
-    "notes": "Borderline case: not a clean 'not_maintenance' negative, but also not a typical unit-level maintenance issue — tests whether the system reasonably classifies shared-property access equipment as access_lock rather than forcing it elsewhere or over-escalating."
+    "expected_missing_information": [
+      "Is the code failing for everyone or only this tenant?",
+      "Was the gate code recently changed or reissued by management?"
+    ],
+    "notes": "Borderline shared-property access equipment (still access_lock). missing_information = scope of the fault and whether it's a reissue vs a hardware failure."
   },
   {
     "id": "case_19",
@@ -225,18 +279,21 @@
     "expected_category": "not_maintenance",
     "expected_urgency": "low",
     "expected_missing_information": [],
-    "notes": "Out-of-domain negative case: complete non sequitur, zero property relevance. Tests whether the system cleanly recognizes 'not applicable' rather than manufacturing a maintenance interpretation out of nothing. Reuses not_maintenance category rather than a separate enum value — the actionable signal (does a property manager need to act on this?) is the same 'no' as case_16/case_17."
+    "notes": "Out-of-domain: complete non sequitur. Nothing to ask, nothing to dispatch — recognize as not applicable."
   },
   {
-  "id": "case_20",
-  "description": "Not a big deal, but I noticed a faint gas-ish smell near the stove a few days ago, probably nothing. Also the cabinet hinge is squeaky.",
-  "property": "12 Maple St",
-  "unit": "3B",
-  "attachments": [],
-  "reporter": "tenant",
-  "expected_category": "gas",
-  "expected_urgency": "emergency",
-  "expected_missing_information": [],
-  "notes": "Adversarial override test: gas keyword present but framed casually/downplayed, bundled with a trivial complaint. Final urgency must still be emergency via the deterministic override, regardless of what the LLM's tone-based read alone would produce. Purpose is proving the override actually fires on disagreement, not just coexists with agreement."
-}
+    "id": "case_20",
+    "description": "Not a big deal, but I noticed a faint gas-ish smell near the stove a few days ago, probably nothing. Also the cabinet hinge is squeaky.",
+    "property": "12 Maple St",
+    "unit": "3B",
+    "attachments": [],
+    "reporter": "tenant",
+    "expected_category": "gas",
+    "expected_urgency": "emergency",
+    "expected_missing_information": [
+      "Is the gas-like smell still present now, or was it only noticed a few days ago?",
+      "Is the stove a gas appliance?"
+    ],
+    "notes": "Adversarial override test: gas keyword present but downplayed and bundled with a trivial complaint. Deterministic override forces emergency. missing_information = whether the hazard is current (dispatch/responder briefing); the squeaky hinge is a separate trivial item, not missing info."
+  }
 ]

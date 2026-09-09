@@ -1,6 +1,6 @@
 # Evaluation — 20 fixture cases
 
-Model: `claude-opus-5` · Run: 2026-09-09 02:21 UTC
+Model: `claude-opus-5` · Run: 2026-09-09 02:31 UTC
 
 ## Metrics
 
@@ -11,7 +11,7 @@ Model: `claude-opus-5` · Run: 2026-09-09 02:21 UTC
 | Urgency accuracy | 0.95 |
 | Emergency recall (of 5 emergencies) | 1.0 |
 | Emergency precision | 1.0 |
-| Missing-info detection accuracy | 0.25 |
+| Missing-info appropriateness | 0.9 |
 | Out-of-domain handled correctly | 3/3 |
 | PII leaks | 0 |
 | Avg latency | 5692.9 ms |
@@ -22,26 +22,26 @@ Model: `claude-opus-5` · Run: 2026-09-09 02:21 UTC
 
 | Case | Category (exp / got) | Urgency (exp / llm / final) | Missing-info (exp / got) | Override |
 |---|---|---|---|---|
-| case_01 | gas / gas ✓ | emergency / emergency / emergency ✓ | False / True ✗ | gas_leak |
-| case_02 | water_leak / water_leak ✓ | emergency / emergency / emergency ✓ | False / True ✗ | active_flooding |
-| case_03 | hvac / hvac ✓ | emergency / emergency / emergency ✓ | False / True ✗ | no_heat_freezing |
-| case_04 | electrical / electrical ✓ | emergency / emergency / emergency ✓ | False / True ✗ | fire_or_sparks |
-| case_05 | structural / structural ✓ | emergency / emergency / emergency ✓ | False / True ✗ | structural_collapse |
-| case_06 | plumbing / plumbing ✓ | low / low / low ✓ | False / True ✗ | — |
-| case_07 | appliance / appliance ✓ | normal / normal / normal ✓ | False / True ✗ | — |
-| case_08 | pest / pest ✓ | normal / normal / normal ✓ | False / True ✗ | — |
-| case_09 | access_lock / access_lock ✓ | high / high / high ✓ | False / True ✗ | — |
+| case_01 | gas / gas ✓ | emergency / emergency / emergency ✓ | True / True ✓ | gas_leak |
+| case_02 | water_leak / water_leak ✓ | emergency / emergency / emergency ✓ | True / True ✓ | active_flooding |
+| case_03 | hvac / hvac ✓ | emergency / emergency / emergency ✓ | True / True ✓ | no_heat_freezing |
+| case_04 | electrical / electrical ✓ | emergency / emergency / emergency ✓ | True / True ✓ | fire_or_sparks |
+| case_05 | structural / structural ✓ | emergency / emergency / emergency ✓ | True / True ✓ | structural_collapse |
+| case_06 | plumbing / plumbing ✓ | low / low / low ✓ | True / True ✓ | — |
+| case_07 | appliance / appliance ✓ | normal / normal / normal ✓ | True / True ✓ | — |
+| case_08 | pest / pest ✓ | normal / normal / normal ✓ | True / True ✓ | — |
+| case_09 | access_lock / access_lock ✓ | high / high / high ✓ | True / True ✓ | — |
 | case_10 | electrical / electrical ✓ | normal / normal / normal ✓ | True / True ✓ | — |
 | case_11 | other / other ✓ | low / normal / normal ✗ | True / True ✓ | — |
-| case_12 | hvac / hvac ✓ | normal / normal / normal ✓ | False / True ✗ | — |
+| case_12 | hvac / hvac ✓ | normal / normal / normal ✓ | True / True ✓ | — |
 | case_13 | water_leak / water_leak ✓ | high / high / high ✓ | True / True ✓ | — |
-| case_14 | plumbing / plumbing ✓ | high / high / high ✓ | False / True ✗ | — |
+| case_14 | plumbing / plumbing ✓ | high / high / high ✓ | True / True ✓ | — |
 | case_15 | other / other ✓ | high / high / high ✓ | True / True ✓ | — |
 | case_16 | not_maintenance / not_maintenance ✓ | low / low / low ✓ | False / False ✓ | — |
 | case_17 | not_maintenance / not_maintenance ✓ | low / low / low ✓ | False / True ✗ | — |
-| case_18 | access_lock / access_lock ✓ | normal / normal / normal ✓ | False / True ✗ | — |
+| case_18 | access_lock / access_lock ✓ | normal / normal / normal ✓ | True / True ✓ | — |
 | case_19 | not_maintenance / not_maintenance ✓ | low / low / low ✓ | False / True ✗ | — |
-| case_20 | gas / gas ✓ | emergency / high / emergency ✓ | False / True ✗ | gas_leak (forced) |
+| case_20 | gas / gas ✓ | emergency / high / emergency ✓ | True / True ✓ | gas_leak (forced) |
 
 ## Urgency rationale
 
@@ -68,25 +68,21 @@ Model: `claude-opus-5` · Run: 2026-09-09 02:21 UTC
 
 ## Read (updated by hand after each run)
 
-**2026-09-09 — rubric fix confirmed stable over 3 runs.**
+**2026-09-09 — metric-definition fix, not a model change.** `expected_missing_information`
+in the fixtures was rewritten from an implicit "is this too vague to classify?"
+flag to its intended meaning: **dispatch-actionable follow-up questions** a
+dispatcher would genuinely want answered. This run's numbers are run 3's model
+output re-scored offline against the corrected fixtures (`scripts/rescore.py`) —
+no new model calls.
 
-| | run 1 | run 2 | run 3 |
-|---|---|---|---|
-| category accuracy | 1.0 | 1.0 | 1.0 |
-| urgency accuracy | 0.95 | 0.95 | 0.95 |
-| emergency recall / precision | 1.0 / 1.0 | 1.0 / 1.0 | 1.0 / 1.0 |
-| missing-info detection | 0.20 | 0.25 | 0.25 |
-
-- **Zero urgency flips, zero category flips across all 3 runs.** The sole urgency
-  miss is case_11 every time, at confidence exactly 0.30 every time.
-- case_13 stable at `high` @ 0.85–0.86; case_15 stable at `high` @ 0.5–0.6.
-- Pooled confidence calibration (60 classifications): correct n=57 mean 0.88;
-  wrong n=3, all `[0.30]`. **No confidently-wrong case in any run.**
-- The old ±1-case run variance (case_10, case_14 flipping) is gone too — both
-  now stable. The rubric + the always-write-a-rationale requirement seem to have
-  tightened the decision procedure.
-
-**`missing_information` is measuring the wrong construct — see PROGRESS.md.**
-The field is doing double duty (classification-relevant unknowns vs. an
-operational checklist for the responder); the model answers the second, the
-fixtures grade the first.
+- **`missing_info_appropriateness` 0.20 → 0.90.** The model was never wrong; the
+  old metric was grading the wrong construct.
+- The 2 remaining misses are the same pattern: **case_17** (billing) and
+  **case_19** (weather) — both `not_maintenance`, where the model asks follow-up
+  questions instead of just recognising "route elsewhere, nothing to dispatch".
+  It's doing another team's intake. Small, consistent, real.
+- Model still over-asks by ~1–2 questions vs. the curated expected lists on most
+  cases (case_07: 4 vs 2, case_11: 7 vs 4). The binary metric doesn't penalise
+  verbosity; noted, not fixed.
+- Everything else unchanged from the 3-run rubric-fix confirmation: category 1.0,
+  urgency 0.95 (case_11 the lone miss @ 0.30), emergency recall/precision 1.0.

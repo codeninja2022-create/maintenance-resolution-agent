@@ -112,7 +112,11 @@ def compute_metrics(rows: list) -> dict:
         "emergency_precision": rate(
             lambda r: r["expected_urgency"] == "emergency", predicted_emergencies
         ),
-        "missing_info_detection_accuracy": rate(
+        # Corrected 2026-09-09: expected_missing_information is now
+        # "dispatch-actionable follow-up questions", not a vagueness flag.
+        # Scored as: did the model produce questions exactly when the case
+        # warrants them (non-empty ⇔ non-empty).
+        "missing_info_appropriateness": rate(
             lambda r: r["got_missing_info"] == r["expected_missing_info"], ok
         ),
         "out_of_domain_cases": len(ood),
@@ -142,7 +146,7 @@ def write_summary(metrics: dict, rows: list, model: str) -> None:
         f"| Urgency accuracy | {metrics['urgency_accuracy']} |",
         f"| Emergency recall (of 5 emergencies) | {metrics['emergency_recall']} |",
         f"| Emergency precision | {metrics['emergency_precision']} |",
-        f"| Missing-info detection accuracy | {metrics['missing_info_detection_accuracy']} |",
+        f"| Missing-info appropriateness | {metrics['missing_info_appropriateness']} |",
         f"| Out-of-domain handled correctly | {metrics['out_of_domain_correct']}/{metrics['out_of_domain_cases']} |",
         f"| PII leaks | {metrics['pii_leak_count']} |",
         f"| Avg latency | {metrics['avg_latency_ms']} ms |",
