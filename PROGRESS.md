@@ -29,9 +29,11 @@
   - **confidence calibration fixed**: wrong-urgency confidences [0.60,0.25,0.90,0.45] → **[0.30]**; no confidently-wrong case remains, so a ~0.90 human-review threshold now works
   - aggregate 15→20: category 0.87→1.0, urgency 0.73→0.95, emergency precision 0.71→1.0, recall stays 1.0
 - [x] **Decision logged:** rubric fix alone is sufficient — do NOT build the coherence-override rule. +1 caution bias essentially gone from the eval.
-- [ ] Fix the noisy `missing_information` field — still ~0.20 detection, untouched, unusable as a review gate
-- [ ] Address eval-run variance — average ≥3 runs (single runs move ~±1 case; confirm the rubric-fix gains hold)
+- [x] Rubric fix confirmed over 3 eval runs — category 1.0 / urgency 0.95 / emergency precision 1.0 every run, zero flips, case_11 the only miss (@ 0.30) each time. Not a one-off. Eval-run variance also resolved (case_10/case_14 no longer flip).
+- [x] `missing_information` underperformance diagnosed (detection 0.20–0.25) — **root cause: the field conflates two constructs.** Prompt asks for "questions a dispatcher would need answered"; model returns a responder-checklist (non-empty on ~18/20, incl. all 5 clear emergencies). Fixtures grade the narrower "is this too vague to classify" (empty for 16/20). Model is *not* padding — case_16 gets 0 questions, question count scales with real ambiguity. Real coherence bug: high-confidence cases still get questions that wouldn't change the classification. Full diagnosis + proposed prompt fix in DECISIONS.md.
+- [ ] Apply the `missing_information` prompt fix (scope to classification-relevant unknowns; exclude responder-checklist items; tie to confidence), re-run 3×, check detection moves toward 0.8+
 - [ ] Model A/B — Sonnet/Haiku vs `claude-opus-5` (now $0.019 + 6.1 s per case after the rationale field)
+- [ ] Optional fixture review — case_07 / case_14 expected-`[]` are arguable (their model questions genuinely bear on urgency)
 
 ## Phase 2, 4+
 Not started — see ROADMAP.md. Phase 3 was prioritized ahead of Phase 2 (intake API hardening) because it's addressing an observed failure from real eval data, per the project's governing scope rule.
